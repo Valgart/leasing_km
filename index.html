@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leasing-Kilometerrechner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            transition: background-color 0.5s, color 0.5s;
+        }
+
+        .positive-difference {
+            color: red;
+        }
+
+        .negative-difference {
+            color: green;
+        }
+
+        /* Dark Mode Styles */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a;
+                color: #ffffff;
+            }
+
+            input,
+            button {
+                background-color: #2b2b2b;
+                color: #ffffff;
+            }
+        }
+
+        /* Größere Abstände zwischen den Eingabefeldern */
+        form {
+            margin-bottom: 20px;
+        }
+
+        label,
+        input,
+        button {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Leasing-Kilometerrechner</h2>
+
+    <form id="leasingForm">
+        <label for="startDate">Startdatum:</label>
+        <input type="date" id="startDate" required><br>
+
+        <label for="initialMileage">Anfangs-Kilometerstand:</label>
+        <input type="number" id="initialMileage" required><br>
+
+        <label for="mileagePerYear">Kilometer pro Jahr:</label>
+        <input type="number" id="mileagePerYear" required><br>
+
+        <label for="currentMileage">Aktueller Kilometerstand:</label>
+        <input type="number" id="currentMileage" required><br>
+
+        <button type="button" onclick="calculateMileage()">Berechnen</button>
+    </form>
+
+    <h3>Kumulierter Kilometerstand bis heute:</h3>
+    <p id="maxMileageResult"></p>
+
+    <h3>Erlaubte Kilometer pro Tag:</h3>
+    <p id="allowedDailyMileage"></p>
+
+    <h3>Differenz zum aktuellen Kilometerstand:</h3>
+    <p id="differenceResult"></p>
+
+    <script>
+        function calculateMileage() {
+            var startDate = new Date(document.getElementById('startDate').value);
+            var initialMileage = parseFloat(document.getElementById('initialMileage').value);
+            var mileagePerYear = parseFloat(document.getElementById('mileagePerYear').value);
+            var currentMileage = parseFloat(document.getElementById('currentMileage').value);
+            var currentDate = new Date();
+
+            // Berechne die Anzahl der Tage zwischen dem Startdatum und dem heutigen Datum
+            var daysElapsed = Math.floor((currentDate - startDate) / (24 * 60 * 60 * 1000));
+
+            // Berechne den maximalen Kilometerstand basierend auf den gefahrenen Kilometern pro Jahr
+            var maxMileage = initialMileage + Math.ceil(mileagePerYear / 365 * daysElapsed);
+
+            // Berechne die Differenz zum aktuellen Kilometerstand
+            var difference = Math.round(currentMileage - maxMileage);
+
+            // Berechne die erlaubten Kilometer pro Tag
+            var allowedDailyMileage = Math.ceil(mileagePerYear / 365);
+
+            // Anzeige des kumulierten Kilometerstands
+            document.getElementById('maxMileageResult').innerHTML = "Kumulierter Kilometerstand bis heute: " + maxMileage + " km";
+
+            // Anzeige der erlaubten Kilometer pro Tag
+            document.getElementById('allowedDailyMileage').innerHTML = "Erlaubte Kilometer pro Tag: " + allowedDailyMileage + " km";
+
+            // Anzeige der Differenz zum aktuellen Kilometerstand in entsprechender Farbe
+            var differenceResultElement = document.getElementById('differenceResult');
+            differenceResultElement.innerHTML = "Differenz zum aktuellen Kilometerstand: " + difference + " km";
+
+            if (difference >= 0) {
+                differenceResultElement.className = 'positive-difference';
+            } else {
+                differenceResultElement.className = 'negative-difference';
+            }
+        }
+    </script>
+
+    <script>
+        // Dark Mode erkennen und anwenden
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.style.backgroundColor = "#1a1a1a";
+            document.body.style.color = "#ffffff";
+            var inputs = document.querySelectorAll('input, button');
+            inputs.forEach(function (input) {
+                input.style.backgroundColor = "#2b2b2b";
+                input.style.color = "#ffffff";
+            });
+        }
+    </script>
+</body>
+</html>
+
+
