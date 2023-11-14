@@ -7,10 +7,10 @@ Die Freikm pro Jahr
 Den aktuellen KM Stand des Fahrzeugs.
 
 Es wird berechnet
-  - wie viele km pro Tag gefahren werden dürfen
-  - wie viele km sich seit der Übergabe ergeben haben
+  - wie viele KM pro Tag gefahren werden dürfen
+  - wie viele KM sich seit der Übergabe ergeben haben
   - wie hoch die Differenz ist
     -  Sind zuviele KM gefahren worden wird der Wert in Rot dargestellt
-    -  Sind noch Frei km vorhanden werden diese Grün dargestellt
+    -  Sind noch Freikm vorhanden werden diese Grün dargestellt
 
 <img width="297" alt="image" src="https://github.com/Valgart/leasing_km/assets/119137735/a106589b-7b35-4aba-a7a3-af241786ff4f">
