@@ -1,129 +1,411 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leasing-Kilometerrechner</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            transition: background-color 0.5s, color 0.5s;
-        }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leasing-Kilometer-Rechner</title>
+  <style>
+    /* ------------------------------------
+       Farbvariablen (Light-Mode als Default)
+    ------------------------------------ */
+    :root {
+      --primary-color: #28a745;      /* Von Blau auf Grün geändert */
+      --primary-hover: #218838;     /* Dunkleres Grün für Hover */
+      --bg-color: #f7f9fc;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --muted-color: #666666;
+      --input-bg: #fafafa;
+      --input-border: #cccccc;
+      --error-color: #e63946;
+      --success-color: #28a745;     /* Grün statt Blau */
+      --toggle-bg: #dddddd;
+      --toggle-knob: #ffffff;
+      --icon-color: #f1c40f;        /* Gelb für Sonne */
+      --icon-dark-color: #f1c40f;   /* Gelb für Mond-Umrandung */
+      --radius: 8px;
+      --transition: 0.2s ease-in-out;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
 
-        .positive-difference {
-            color: red;
-        }
+    /* ------------------------------------
+       Dark-Mode überschreibt nur die Variablen
+    ------------------------------------ */
+    .dark {
+      --primary-color: #4e9af2;
+      --primary-hover: #3b81c7;
+      --bg-color: #1f1f1f;
+      --card-bg: #2c2c2c;
+      --text-color: #e0e0e0;
+      --muted-color: #bbbbbb;
+      --input-bg: #333333;
+      --input-border: #555555;
+      --error-color: #ff6b6b;
+      --success-color: #4e9af2;
+      --toggle-bg: #555555;
+      --toggle-knob: #dddddd;
+      --icon-color: #bbbbbb;      /* Mond in hellem Grau */
+      --icon-dark-color: #bbbbbb; /* Mond-Farbe */
+    }
 
-        .negative-difference {
-            color: green;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      font-family: var(--font-sans);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
 
-        /* Dark Mode Styles */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #1a1a1a;
-                color: #ffffff;
-            }
+    /* ------------------------------------
+       Zentrierter Container & Card
+    ------------------------------------ */
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      max-width: 420px;
+      width: 100%;
+      padding: 2rem;
+      position: relative;
+    }
+    h1 {
+      margin-top: 2rem;            /* Mehr Abstand zum Toggle-Button */
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+      color: var(--primary-color);
+    }
+    p.description {
+      font-size: 0.9rem;
+      color: var(--muted-color);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
 
-            input,
-            button {
-                background-color: #2b2b2b;
-                color: #ffffff;
-            }
-        }
+    /* ------------------------------------
+       Light/Dark-Mode Toggle + Icons
+    ------------------------------------ */
+    .theme-switch-wrapper {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      align-items: center;
+    }
+    .icon-sun,
+    .icon-moon {
+      font-size: 1.2rem;
+      color: var(--icon-color);
+      transition: color var(--transition);
+    }
+    .icon-sun {
+      margin-right: 0.5rem;
+    }
+    .icon-moon {
+      margin-left: 0.5rem;
+    }
+    /* Wenn Dark-Mode aktiv, Sonnen-Icon ausgrauen und Mond hervorheben */
+    .dark .icon-sun {
+      color: var(--muted-color);
+    }
+    .dark .icon-moon {
+      color: var(--icon-dark-color);
+    }
 
-        /* Größere Abstände zwischen den Eingabefeldern */
-        form {
-            margin-bottom: 20px;
-        }
+    .theme-switch {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .theme-switch input {
+      display: none;
+    }
+    .slider {
+      width: 42px;
+      height: 22px;
+      background-color: var(--toggle-bg);
+      border-radius: 12px;
+      position: relative;
+      transition: background-color var(--transition);
+    }
+    .knob {
+      width: 18px;
+      height: 18px;
+      background-color: var(--toggle-knob);
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform var(--transition);
+    }
+    input:checked + .slider .knob {
+      transform: translateX(20px);
+    }
 
-        label,
-        input,
-        button {
-            margin-bottom: 10px;
-        }
-    </style>
+    /* ------------------------------------
+       Formular-Layout
+    ------------------------------------ */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+    input[type="date"],
+    input[type="number"] {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 0.95rem;
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius);
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      transition: border-color var(--transition), background-color var(--transition);
+    }
+    input[type="date"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(42, 157, 244, 0.2);
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      background-color: var(--primary-color);
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background-color var(--transition);
+      text-align: center;
+    }
+    .btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    /* ------------------------------------
+       Ergebnisanzeige
+    ------------------------------------ */
+    .results {
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .results p {
+      margin-bottom: 0.75rem;
+    }
+    .results .info {
+      color: var(--muted-color);
+    }
+    .results .success {
+      color: var(--success-color);
+      font-weight: 600;
+    }
+    .results .error {
+      color: var(--error-color);
+      font-weight: 600;
+    }
+
+    /* ------------------------------------
+       Media Queries für Mobilgeräte
+    ------------------------------------ */
+    @media (max-width: 480px) {
+      .card {
+        padding: 1.5rem;
+      }
+      h1 {
+        margin-top: 1.5rem;       /* Etwas weniger Abstand auf sehr kleinen Bildschirmen */
+        font-size: 1.3rem;
+      }
+      .theme-switch-wrapper {
+        top: 0.75rem;
+        right: 0.75rem;
+      }
+      .icon-sun,
+      .icon-moon {
+        font-size: 1rem;
+      }
+    }
+
+    /* ------------------------------------
+       Hinweis, falls kein JavaScript aktiv
+    ------------------------------------ */
+    noscript {
+      display: block;
+      background-color: #ffe9e9;
+      color: var(--error-color);
+      border: 1px solid var(--error-color);
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
+
 <body>
-    <h2>Leasing-Kilometerrechner</h2>
+  <div class="container">
+    <div class="card">
+      <noscript>
+        JavaScript ist deaktiviert. Bitte aktiviere JavaScript, um den Rechner zu nutzen.
+      </noscript>
 
-    <form id="leasingForm">
-        <label for="startDate">Startdatum:</label>
-        <input type="date" id="startDate" required><br>
+      <!-- Light/Dark-Mode Toggle mit Icons -->
+      <div class="theme-switch-wrapper">
+        <span class="icon-sun">☀️</span>
+        <label class="theme-switch" for="themeToggle">
+          <input type="checkbox" id="themeToggle">
+          <div class="slider">
+            <div class="knob"></div>
+          </div>
+        </label>
+        <span class="icon-moon">🌙</span>
+      </div>
 
-        <label for="initialMileage">Anfangs-Kilometerstand:</label>
-        <input type="number" id="initialMileage" required><br>
+      <h1>Leasing-Kilometer-Rechner</h1>
+      <p class="description">
+        Berechne, wie viele Kilometer du aktuell noch innerhalb deiner Freikilometer fahren kannst.
+      </p>
 
-        <label for="mileagePerYear">Kilometer pro Jahr:</label>
-        <input type="number" id="mileagePerYear" required><br>
+      <div class="form-group">
+        <label for="startDate">Leasing-Startdatum</label>
+        <input type="date" id="startDate" required>
+      </div>
 
-        <label for="currentMileage">Aktueller Kilometerstand:</label>
-        <input type="number" id="currentMileage" required><br>
+      <div class="form-group">
+        <label for="initialMileage">Anfangs-Kilometerstand (km)</label>
+        <input type="number" id="initialMileage" min="0" step="1" placeholder="z.B. 0" required>
+      </div>
 
-        <button type="button" onclick="calculateMileage()">Berechnen</button>
-    </form>
+      <div class="form-group">
+        <label for="mileagePerYear">Vertraglich erlaubte km pro Jahr</label>
+        <input type="number" id="mileagePerYear" min="0" step="1" placeholder="z.B. 15000" required>
+      </div>
 
-    <h3>Kumulierter Kilometerstand bis heute:</h3>
-    <p id="maxMileageResult"></p>
+      <div class="form-group">
+        <label for="currentMileage">Aktueller Kilometerstand (km)</label>
+        <input type="number" id="currentMileage" min="0" step="1" placeholder="z.B. 12000" required>
+      </div>
 
-    <h3>Erlaubte Kilometer pro Tag:</h3>
-    <p id="allowedDailyMileage"></p>
+      <button class="btn" type="button" id="calculateBtn">Berechnen</button>
 
-    <h3>Differenz zum aktuellen Kilometerstand:</h3>
-    <p id="differenceResult"></p>
+      <div class="results" id="results">
+        <p id="allowedDailyMileage" class="info"></p>
+        <p id="maxMileageResult" class="info"></p>
+        <p id="differenceResult"></p>
+      </div>
+    </div>
+  </div>
 
-    <script>
-        function calculateMileage() {
-            var startDate = new Date(document.getElementById('startDate').value);
-            var initialMileage = parseFloat(document.getElementById('initialMileage').value);
-            var mileagePerYear = parseFloat(document.getElementById('mileagePerYear').value);
-            var currentMileage = parseFloat(document.getElementById('currentMileage').value);
-            var currentDate = new Date();
-
-            // Berechne die Anzahl der Tage zwischen dem Startdatum und dem heutigen Datum
-            var daysElapsed = Math.floor((currentDate - startDate) / (24 * 60 * 60 * 1000));
-
-            // Berechne den maximalen Kilometerstand basierend auf den gefahrenen Kilometern pro Jahr
-            var maxMileage = initialMileage + Math.ceil(mileagePerYear / 365 * daysElapsed);
-
-            // Berechne die Differenz zum aktuellen Kilometerstand
-            var difference = Math.round(currentMileage - maxMileage);
-
-            // Berechne die erlaubten Kilometer pro Tag
-            var allowedDailyMileage = Math.ceil(mileagePerYear / 365);
-
-            // Anzeige des kumulierten Kilometerstands
-            document.getElementById('maxMileageResult').innerHTML = "Kumulierter Kilometerstand bis heute: " + maxMileage + " km";
-
-            // Anzeige der erlaubten Kilometer pro Tag
-            document.getElementById('allowedDailyMileage').innerHTML = "Erlaubte Kilometer pro Tag: " + allowedDailyMileage + " km";
-
-            // Anzeige der Differenz zum aktuellen Kilometerstand in entsprechender Farbe
-            var differenceResultElement = document.getElementById('differenceResult');
-            differenceResultElement.innerHTML = "Differenz zum aktuellen Kilometerstand: " + difference + " km";
-
-            if (difference >= 0) {
-                differenceResultElement.className = 'positive-difference';
-            } else {
-                differenceResultElement.className = 'negative-difference';
-            }
+  <script>
+    // 1) Light/Dark-Mode: prüfe Lokalspeicher, wende dann die Klasse .dark an oder nicht
+    (function() {
+      const themeToggle = document.getElementById('themeToggle');
+      // Wenn im Local Storage bereits 'dark' gespeichert ist, aktiviere Dark-Mode
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+        themeToggle.checked = true;
+      }
+      // Listener, wenn der Schalter umgelegt wird
+      themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
         }
-    </script>
+      });
+    })();
 
-    <script>
-        // Dark Mode erkennen und anwenden
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.style.backgroundColor = "#1a1a1a";
-            document.body.style.color = "#ffffff";
-            var inputs = document.querySelectorAll('input, button');
-            inputs.forEach(function (input) {
-                input.style.backgroundColor = "#2b2b2b";
-                input.style.color = "#ffffff";
-            });
-        }
-    </script>
+    // 2) Hauptfunktion: Berechnung der Freikilometer
+    function calculateMileage() {
+      // Eingabewerte auslesen
+      const startDateInput = document.getElementById('startDate').value;
+      const initialMileage  = parseFloat(document.getElementById('initialMileage').value);
+      const mileagePerYear  = parseFloat(document.getElementById('mileagePerYear').value);
+      const currentMileage  = parseFloat(document.getElementById('currentMileage').value);
+
+      // Validierung
+      if (!startDateInput) {
+        alert("Bitte gib ein gültiges Startdatum ein.");
+        return;
+      }
+      const startDate = new Date(startDateInput);
+      const today     = new Date();
+
+      // Nur Datum in UTC vergleichen (ohne Uhrzeit-Anteil)
+      const startUTC = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+      const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+
+      if (startUTC > todayUTC) {
+        alert("Das Startdatum darf nicht in der Zukunft liegen.");
+        return;
+      }
+      if (isNaN(initialMileage) || initialMileage < 0 ||
+          isNaN(mileagePerYear) || mileagePerYear < 0 ||
+          isNaN(currentMileage) || currentMileage < 0) {
+        alert("Bitte gib alle Kilometerwerte als positive Zahlen ein.");
+        return;
+      }
+      if (currentMileage < initialMileage) {
+        alert("Der aktuelle Kilometerstand darf nicht kleiner sein als der Anfangs-Kilometerstand.");
+        return;
+      }
+
+      // Tage seit Leasing-Start
+      const daysElapsed = Math.floor((todayUTC - startUTC) / (1000 * 60 * 60 * 24));
+
+      // Erlaubte Gesamt-KM seit Start (dezimal), danach abrunden
+      const totalAllowedDecimal = initialMileage + (mileagePerYear / 365) * daysElapsed;
+      const maxMileage = Math.floor(totalAllowedDecimal);
+
+      // Verbleibende Freikilometer (kann negativ sein, wenn überschritten)
+      const remaining = maxMileage - currentMileage;
+
+      // Vertragliche KM/Tag (ebenfalls abrunden)
+      const allowedDaily = Math.floor(mileagePerYear / 365);
+
+      // Elemente zur Anzeige holen
+      const allowedElem = document.getElementById('allowedDailyMileage');
+      const maxElem     = document.getElementById('maxMileageResult');
+      const diffElem    = document.getElementById('differenceResult');
+
+      // Inhalte setzen
+      allowedElem.textContent = `Vertraglich max. km pro Tag: ${allowedDaily} km`;
+      maxElem.textContent     = `Bis heute erlaubter Maximal-KM-Stand: ${maxMileage} km`;
+
+      if (remaining >= 0) {
+        diffElem.innerHTML = `Du kannst noch <strong>${remaining}</strong> km innerhalb der Freikilometer fahren.`;
+        diffElem.className = "success";
+      } else {
+        diffElem.innerHTML = `Du bist bereits <strong>${Math.abs(remaining)}</strong> km über dem Freikontingent!`;
+        diffElem.className = "error";
+      }
+    }
+
+    // 3) Sicherstellen, dass der Button wirklich die Funktion auslöst
+    document.getElementById('calculateBtn').addEventListener('click', calculateMileage);
+  </script>
 </body>
 </html>
-
 
