@@ -13,4 +13,4 @@ Es wird berechnet
     -  Sind zuviele KM gefahren worden wird der Wert in Rot dargestellt
     -  Sind noch Freikm vorhanden werden diese Grün dargestellt
 
-<img width="297" alt="image" src="https://github.com/Valgart/leasing_km/assets/119137735/a106589b-7b35-4aba-a7a3-af241786ff4f](https://github.com/Valgart/leasing_km/blob/main/Screenshot%2003.06.2025%20um%2021.19.57%20PM.png">
+<img width="297" alt="image" src="https://github.com/Valgart/leasing_km/blob/main/Screenshot%2003.06.2025%20um%2021.19.57%20PM.png">
