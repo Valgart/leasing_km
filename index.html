@@ -306,13 +306,25 @@
         <input type="number" id="currentMileage" min="0" step="1" placeholder="z.B. 12000" required>
       </div>
 
+      <div class="form-group">
+        <label for="overageCostPerKm">Mehrkosten pro km (€)</label>
+        <input type="number" id="overageCostPerKm" min="0" step="0.01" value="0.15" required>
+      </div>
+
+      <div class="form-group">
+        <label for="underCostPerKm">Minderkosten pro km (€)</label>
+        <input type="number" id="underCostPerKm" min="0" step="0.01" value="0.08" required>
+      </div>
+
       <button class="btn" type="button" id="calculateBtn">Berechnen</button>
 
       <div class="results" id="results">
         <p id="allowedDailyMileage" class="info"></p>
         <p id="daysElapsedResult" class="info"></p>
         <p id="maxMileageResult" class="info"></p>
+        <p id="calculationExplanation" class="info"></p>
         <p id="differenceResult"></p>
+        <p id="costResult"></p>
       </div>
     </div>
   </div>
@@ -350,6 +362,8 @@
       const initialMileage  = parseFloat(document.getElementById('initialMileage').value);
       const mileagePerYear  = parseFloat(document.getElementById('mileagePerYear').value);
       const currentMileage  = parseFloat(document.getElementById('currentMileage').value);
+      const overageCostPerKm = parseFloat(document.getElementById('overageCostPerKm').value);
+      const underCostPerKm   = parseFloat(document.getElementById('underCostPerKm').value);
 
       // Validierung
       if (!startDateInput) {
@@ -381,7 +395,9 @@
       }
       if (isNaN(initialMileage) || initialMileage < 0 ||
           isNaN(mileagePerYear) || mileagePerYear < 0 ||
-          isNaN(currentMileage) || currentMileage < 0) {
+          isNaN(currentMileage) || currentMileage < 0 ||
+          isNaN(overageCostPerKm) || overageCostPerKm < 0 ||
+          isNaN(underCostPerKm)   || underCostPerKm < 0) {
         alert("Bitte gib alle Kilometerwerte als positive Zahlen ein.");
         return;
       }
@@ -408,19 +424,37 @@
       const daysElapsedElem = document.getElementById('daysElapsedResult');
       const maxElem     = document.getElementById('maxMileageResult');
       const diffElem    = document.getElementById('differenceResult');
+      const calcElem    = document.getElementById('calculationExplanation');
+      const costElem    = document.getElementById('costResult');
 
       // Inhalte setzen
       allowedElem.textContent = `Vertraglich max. km pro Tag: ${allowedDaily} km`;
       const formattedToday = today.toLocaleDateString('de-DE');
       daysElapsedElem.textContent = `Tage seit Vertragsbeginn: ${daysElapsed} (Stand: ${formattedToday})`;
       maxElem.textContent     = `Bis heute erlaubter Maximal-KM-Stand: ${maxMileage} km`;
+      calcElem.textContent    = '';
+      calcElem.className      = 'info';
+      costElem.textContent    = '';
+      costElem.className      = '';
 
       if (remaining >= 0) {
         diffElem.innerHTML = `Du kannst noch <strong>${remaining}</strong> km innerhalb der Freikilometer fahren.`;
         diffElem.className = "success";
+
+        const savings = remaining * underCostPerKm;
+        calcElem.textContent = `Berechnung: ${remaining} km × ${underCostPerKm.toFixed(2)} €/km`;
+        costElem.innerHTML = `Erwartete Minderkosten: <strong>${savings.toFixed(2)} €</strong>.`;
+        costElem.className = "success";
       } else {
-        diffElem.innerHTML = `Du bist bereits <strong>${Math.abs(remaining)}</strong> km über dem Freikontingent!`;
+        const overageKm = Math.abs(remaining);
+        const extraCosts = overageKm * overageCostPerKm;
+
+        diffElem.innerHTML = `Du bist bereits <strong>${overageKm}</strong> km über dem Freikontingent!`;
         diffElem.className = "error";
+
+        calcElem.textContent = `Berechnung: ${overageKm} km × ${overageCostPerKm.toFixed(2)} €/km`;
+        costElem.innerHTML = `Erwartete Mehrkosten: <strong>${extraCosts.toFixed(2)} €</strong>.`;
+        costElem.className = "error";
       }
     }
 
