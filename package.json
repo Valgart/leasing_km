@@ -1,0 +1,14 @@
+{
+  "name": "leasing-km",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Webbasierter Leasing-Kilometer-Rechner mit npm-gestütztem Development-Workflow.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
