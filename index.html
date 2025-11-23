@@ -356,21 +356,19 @@
         alert("Bitte gib ein gültiges Startdatum ein.");
         return;
       }
-      const startDate = new Date(startDateInput);
-      const today     = new Date();
-      const MS_PER_DAY = 1000 * 60 * 60 * 24;
+      const parseDateToUTC = (value) => {
+        const [year, month, day] = value.split('-').map(Number);
+        return Date.UTC(year, month - 1, day);
+      };
 
-      // Nur Datum in UTC vergleichen (ohne Uhrzeit-Anteil)
-      const startUTCDateOnly = Date.UTC(
-        startDate.getUTCFullYear(),
-        startDate.getUTCMonth(),
-        startDate.getUTCDate()
-      );
+      const startUTCDateOnly = parseDateToUTC(startDateInput);
+      const today            = new Date();
       const todayUTCDateOnly = Date.UTC(
         today.getUTCFullYear(),
         today.getUTCMonth(),
         today.getUTCDate()
       );
+      const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
       if (Number.isNaN(startUTCDateOnly)) {
         alert("Das Startdatum konnte nicht gelesen werden. Bitte wähle ein gültiges Datum aus.");
@@ -393,7 +391,7 @@
       }
 
       // Tage seit Leasing-Start (zeit-/zeitzonenunabhängig)
-      const daysElapsed = Math.round((todayUTCDateOnly - startUTCDateOnly) / MS_PER_DAY);
+      const daysElapsed = Math.floor((todayUTCDateOnly - startUTCDateOnly) / MS_PER_DAY);
 
       // Erlaubte Gesamt-KM seit Start (dezimal), danach abrunden
       const totalAllowedDecimal = initialMileage + (mileagePerYear / 365) * daysElapsed;
