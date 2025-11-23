@@ -310,6 +310,7 @@
 
       <div class="results" id="results">
         <p id="allowedDailyMileage" class="info"></p>
+        <p id="daysElapsedResult" class="info"></p>
         <p id="maxMileageResult" class="info"></p>
         <p id="differenceResult"></p>
       </div>
@@ -320,20 +321,25 @@
     // 1) Light/Dark-Mode: prüfe Lokalspeicher, wende dann die Klasse .dark an oder nicht
     (function() {
       const themeToggle = document.getElementById('themeToggle');
-      // Wenn im Local Storage bereits 'dark' gespeichert ist, aktiviere Dark-Mode
-      if (localStorage.getItem('theme') === 'dark') {
-        document.documentElement.classList.add('dark');
-        themeToggle.checked = true;
+      const storedTheme = localStorage.getItem('theme');
+
+      function applyTheme(mode) {
+        const isDark = mode === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        themeToggle.checked = isDark;
+        localStorage.setItem('theme', mode);
       }
+
+      // Standardmäßig Dark-Mode aktivieren, außer wenn explizit "light" gespeichert ist
+      if (storedTheme === 'light') {
+        applyTheme('light');
+      } else {
+        applyTheme('dark');
+      }
+
       // Listener, wenn der Schalter umgelegt wird
       themeToggle.addEventListener('change', function() {
-        if (this.checked) {
-          document.documentElement.classList.add('dark');
-          localStorage.setItem('theme', 'dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-          localStorage.setItem('theme', 'light');
-        }
+        applyTheme(this.checked ? 'dark' : 'light');
       });
     })();
 
@@ -387,11 +393,14 @@
 
       // Elemente zur Anzeige holen
       const allowedElem = document.getElementById('allowedDailyMileage');
+      const daysElapsedElem = document.getElementById('daysElapsedResult');
       const maxElem     = document.getElementById('maxMileageResult');
       const diffElem    = document.getElementById('differenceResult');
 
       // Inhalte setzen
       allowedElem.textContent = `Vertraglich max. km pro Tag: ${allowedDaily} km`;
+      const formattedToday = today.toLocaleDateString('de-DE');
+      daysElapsedElem.textContent = `Tage seit Vertragsbeginn: ${daysElapsed} (Stand: ${formattedToday})`;
       maxElem.textContent     = `Bis heute erlaubter Maximal-KM-Stand: ${maxMileage} km`;
 
       if (remaining >= 0) {
