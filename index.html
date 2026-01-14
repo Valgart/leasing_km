@@ -307,13 +307,18 @@
       </div>
 
       <div class="form-group">
+        <label for="toleranceKm">Toleranz für Freikilometer (km)</label>
+        <input type="number" id="toleranceKm" min="0" step="1" value="0" placeholder="z.B. 250">
+      </div>
+
+      <div class="form-group">
         <label for="overageCostPerKm">Mehrkosten pro km (€)</label>
-        <input type="number" id="overageCostPerKm" min="0" step="0.01" value="0.15" required>
+        <input type="number" id="overageCostPerKm" min="0" step="0.01" value="0.096" required>
       </div>
 
       <div class="form-group">
         <label for="underCostPerKm">Minderkosten pro km (€)</label>
-        <input type="number" id="underCostPerKm" min="0" step="0.01" value="0.08" required>
+        <input type="number" id="underCostPerKm" min="0" step="0.01" value="0.035" required>
       </div>
 
       <button class="btn" type="button" id="calculateBtn">Berechnen</button>
@@ -322,6 +327,7 @@
         <p id="allowedDailyMileage" class="info"></p>
         <p id="daysElapsedResult" class="info"></p>
         <p id="maxMileageResult" class="info"></p>
+        <p id="toleranceResult" class="info"></p>
         <p id="calculationExplanation" class="info"></p>
         <p id="differenceResult"></p>
         <p id="costResult"></p>
@@ -362,6 +368,7 @@
       const initialMileage  = parseFloat(document.getElementById('initialMileage').value);
       const mileagePerYear  = parseFloat(document.getElementById('mileagePerYear').value);
       const currentMileage  = parseFloat(document.getElementById('currentMileage').value);
+      const toleranceKm     = parseFloat(document.getElementById('toleranceKm').value);
       const overageCostPerKm = parseFloat(document.getElementById('overageCostPerKm').value);
       const underCostPerKm   = parseFloat(document.getElementById('underCostPerKm').value);
 
@@ -396,6 +403,7 @@
       if (isNaN(initialMileage) || initialMileage < 0 ||
           isNaN(mileagePerYear) || mileagePerYear < 0 ||
           isNaN(currentMileage) || currentMileage < 0 ||
+          isNaN(toleranceKm) || toleranceKm < 0 ||
           isNaN(overageCostPerKm) || overageCostPerKm < 0 ||
           isNaN(underCostPerKm)   || underCostPerKm < 0) {
         alert("Bitte gib alle Kilometerwerte als positive Zahlen ein.");
@@ -410,7 +418,7 @@
       const daysElapsed = Math.floor((todayUTCDateOnly - startUTCDateOnly) / MS_PER_DAY);
 
       // Erlaubte Gesamt-KM seit Start (dezimal), danach abrunden
-      const totalAllowedDecimal = initialMileage + (mileagePerYear / 365) * daysElapsed;
+      const totalAllowedDecimal = initialMileage + (mileagePerYear / 365) * daysElapsed + toleranceKm;
       const maxMileage = Math.floor(totalAllowedDecimal);
 
       // Verbleibende Freikilometer (kann negativ sein, wenn überschritten)
@@ -423,6 +431,7 @@
       const allowedElem = document.getElementById('allowedDailyMileage');
       const daysElapsedElem = document.getElementById('daysElapsedResult');
       const maxElem     = document.getElementById('maxMileageResult');
+      const toleranceElem = document.getElementById('toleranceResult');
       const diffElem    = document.getElementById('differenceResult');
       const calcElem    = document.getElementById('calculationExplanation');
       const costElem    = document.getElementById('costResult');
@@ -431,7 +440,8 @@
       allowedElem.textContent = `Vertraglich max. km pro Tag: ${allowedDaily} km`;
       const formattedToday = today.toLocaleDateString('de-DE');
       daysElapsedElem.textContent = `Tage seit Vertragsbeginn: ${daysElapsed} (Stand: ${formattedToday})`;
-      maxElem.textContent     = `Bis heute erlaubter Maximal-KM-Stand: ${maxMileage} km`;
+      maxElem.textContent     = `Bis heute erlaubter Maximal-KM-Stand (inkl. Toleranz): ${maxMileage} km`;
+      toleranceElem.textContent = `Berücksichtigte Toleranz: ${toleranceKm} km`;
       calcElem.textContent    = '';
       calcElem.className      = 'info';
       costElem.textContent    = '';
@@ -463,4 +473,3 @@
   </script>
 </body>
 </html>
-
